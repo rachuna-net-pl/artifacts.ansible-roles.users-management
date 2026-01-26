@@ -1,0 +1,24 @@
+---
+- name: "Utwórz grupy systemowe (in_groups)"
+  ansible.builtin.group:
+    name: "{{ item.name if item is mapping else item }}"
+    gid: "{{ item.gid if item is mapping and (item.gid is defined) else omit }}"
+    system: "{{ item.system if item is mapping and (item.system is defined) else omit }}"
+    state: present
+  loop: "{{ in_groups | default([]) }}"
+  loop_control:
+    label: "{{ item.name if item is mapping else item }}"
+
+- name: "Tworzenie kont technicznych na hoście"
+  no_log: true
+  ansible.builtin.include_tasks: create_account.yml
+  loop: "{{ in_technical_accounts.values() | list }}"
+  loop_control:
+    loop_var: var_account
+
+- name: "Tworzenie kont użytkowników na hoście"
+  no_log: true
+  ansible.builtin.include_tasks: create_account.yml
+  loop: "{{ in_user_accounts.values() | list }}"
+  loop_control:
+    loop_var: var_account
