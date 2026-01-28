@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  role_name: users-management
+  role_name: users_management
   namespace: pl_rachuna_net
   author: "Maciej Rachuna"
   description: "Rola do zakładania kont użytkowników i kluczy SSH."

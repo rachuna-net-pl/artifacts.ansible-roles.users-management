@@ -1,8 +1,9 @@
 ---
-- vars:
+- name: "Create account resources"
+  vars:
     users_management_home_dir: "{{ var_account.home_path | default('/home/' + var_account.username) }}"
   block:
-    - name: "Create user group: {{ var_account.username }}"
+    - name: "Create user group"
       ansible.builtin.group:
         name: "{{ var_account.username }}"
         state: present
@@ -10,7 +11,7 @@
       when:
         - var_account.gid is defined
 
-    - name: "Create user account: {{ var_account.username }}"
+    - name: "Create user account"
       ansible.builtin.user:
         name: "{{ var_account.username }}"
         comment: "{{ var_account.comment | default('') }}"
@@ -20,11 +21,11 @@
         uid: "{{ var_account.uid | default(omit) }}"
         home: "{{ users_management_home_dir }}"
 
-    - name: "Copy ssh keys"
+    - name: "Copy SSH keys"
       ansible.builtin.include_tasks: copy_ssh_keys.yml
       vars:
         var_home_dir: "{{ users_management_home_dir }}"
         var_username: "{{ var_account.username }}"
-        var_public_ssh_key: "{{ var_account.public_ssh_key | default(None) }}"
-        var_private_ssh_key: "{{ var_account.private_ssh_key | default(None) }}"
+        var_public_ssh_key: "{{ var_account.public_ssh_key | default(omit) }}"
+        var_private_ssh_key: "{{ var_account.private_ssh_key | default(omit) }}"
         var_authorized_keys: "{{ var_account.authorized_keys | default([]) }}"
