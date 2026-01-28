@@ -26,6 +26,6 @@
       vars:
         var_home_dir: "{{ users_management_home_dir }}"
         var_username: "{{ var_account.username }}"
-        var_public_ssh_key: "{{ var_account.public_ssh_key | default(omit) }}"
-        var_private_ssh_key: "{{ var_account.private_ssh_key | default(omit) }}"
+        var_public_ssh_key: "{{ var_account.public_ssh_key | default(None) }}"
+        var_private_ssh_key: "{{ var_account.private_ssh_key | default(None) }}"
         var_authorized_keys: "{{ var_account.authorized_keys | default([]) }}"
