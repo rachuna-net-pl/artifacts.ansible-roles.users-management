@@ -7,7 +7,7 @@
     group: "{{ var_username }}"
     mode: '0700'
 
-- name: "Install public key for {{ var_username }}"
+- name: "Install public key"
   no_log: true
   ansible.builtin.copy:
     dest: "{{ var_home_dir }}/.ssh/id_rsa.pub"
@@ -15,9 +15,9 @@
     owner: "{{ var_username }}"
     group: "{{ var_username }}"
     mode: '0644'
-  when: var_public_ssh_key is not none
+  when: var_public_ssh_key is defined
 
-- name: "Install private key for {{ var_username }}"
+- name: "Install private key"
   no_log: true
   ansible.builtin.copy:
     dest: "{{ var_home_dir }}/.ssh/id_rsa"
@@ -25,11 +25,11 @@
     owner: "{{ var_username }}"
     group: "{{ var_username }}"
     mode: '0600'
-  when: var_private_ssh_key is not none
+  when: var_private_ssh_key is defined
 
-- name: "Configure authorized_keys for {{ var_username }}"
+- name: "Configure authorized_keys"
   no_log: true
-  ansible.builtin.authorized_key:
+  ansible.posix.authorized_key:
     user: "{{ var_username }}"
     key: "{{ item.authorized_key }}"
     state: "{{ item.state | default('present') }}"
