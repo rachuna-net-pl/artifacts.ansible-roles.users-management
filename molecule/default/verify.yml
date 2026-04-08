@@ -1,0 +1,76 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  tasks:
+    - name: "Verify group 'developers' exists with GID 4000"
+      ansible.builtin.group:
+        name: developers
+        gid: 4000
+        state: present
+      check_mode: true
+      register: group_developers
+      failed_when: group_developers.changed
+
+    - name: "Verify group 'ops' exists"
+      ansible.builtin.group:
+        name: ops
+        state: present
+      check_mode: true
+      register: group_ops
+      failed_when: group_ops.changed
+
+    - name: "Verify user 'testuser' exists"
+      ansible.builtin.getent:
+        database: passwd
+        key: testuser
+
+    - name: "Assert testuser has UID 2001"
+      ansible.builtin.assert:
+        that:
+          - getent_passwd.testuser[1] == "2001"
+
+    - name: "Verify user 'deploy' exists"
+      ansible.builtin.getent:
+        database: passwd
+        key: deploy
+
+    - name: "Assert deploy has UID 2002"
+      ansible.builtin.assert:
+        that:
+          - getent_passwd.deploy[1] == "2002"
+
+    - name: "Verify .ssh directory for testuser"
+      ansible.builtin.stat:
+        path: /home/testuser/.ssh
+      register: ssh_dir
+
+    - name: "Assert .ssh directory permissions"
+      ansible.builtin.assert:
+        that:
+          - ssh_dir.stat.exists
+          - ssh_dir.stat.isdir
+          - ssh_dir.stat.mode == "0700"
+          - ssh_dir.stat.pw_name == "testuser"
+
+    - name: "Verify authorized_keys for testuser"
+      ansible.builtin.stat:
+        path: /home/testuser/.ssh/authorized_keys
+      register: auth_keys
+
+    - name: "Assert authorized_keys exists"
+      ansible.builtin.assert:
+        that:
+          - auth_keys.stat.exists
+          - auth_keys.stat.mode == "0600"
+
+    - name: "Verify .ssh directory for deploy"
+      ansible.builtin.stat:
+        path: /home/deploy/.ssh
+      register: deploy_ssh_dir
+
+    - name: "Assert .ssh directory for deploy"
+      ansible.builtin.assert:
+        that:
+          - deploy_ssh_dir.stat.exists
+          - deploy_ssh_dir.stat.mode == "0700"

@@ -1,0 +1,46 @@
+---
+- name: "Validate that in_groups is a list"
+  ansible.builtin.assert:
+    that:
+      - in_groups is sequence
+      - in_groups is not string
+      - in_groups is not mapping
+    fail_msg: "in_groups must be a list, got: {{ in_groups | type_debug }}"
+
+- name: "Validate that in_user_accounts is a list or dict"
+  ansible.builtin.assert:
+    that:
+      - in_user_accounts is sequence or in_user_accounts is mapping
+      - in_user_accounts is not string
+    fail_msg: "in_user_accounts must be a list or dict, got: {{ in_user_accounts | type_debug }}"
+
+- name: "Validate that in_technical_accounts is a list or dict"
+  ansible.builtin.assert:
+    that:
+      - in_technical_accounts is sequence or in_technical_accounts is mapping
+      - in_technical_accounts is not string
+    fail_msg: "in_technical_accounts must be a list or dict, got: {{ in_technical_accounts | type_debug }}"
+
+- name: "Validate each account has a username"
+  no_log: true
+  ansible.builtin.assert:
+    that:
+      - item.username is defined
+      - item.username | length > 0
+    fail_msg: "Each account must have a non-empty 'username' field"
+  loop: >-
+    {{
+      (in_user_accounts.values() | list if in_user_accounts is mapping else in_user_accounts)
+      +
+      (in_technical_accounts.values() | list if in_technical_accounts is mapping else in_technical_accounts)
+    }}
+  loop_control:
+    label: "{{ item.username | default('MISSING') }}"
+
+- name: "Validate SSH key type"
+  ansible.builtin.assert:
+    that:
+      - users_management_ssh_key_type in ['rsa', 'ed25519', 'ecdsa']
+    fail_msg: >-
+      users_management_ssh_key_type must be one of: rsa, ed25519, ecdsa.
+      Got: {{ users_management_ssh_key_type }}

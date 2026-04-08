@@ -4,8 +4,8 @@ galaxy_info:
   namespace: pl_rachuna_net
   author: "Maciej Rachuna"
   description: "Rola do zakładania kont użytkowników i kluczy SSH."
-  license: MIT
-  min_ansible_version: "2.9"
+  license: CC-BY-NC-SA-4.0
+  min_ansible_version: "2.10"
   platforms:
     - name: Debian
       versions: ["all"]

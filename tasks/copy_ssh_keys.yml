@@ -5,31 +5,31 @@
     state: directory
     owner: "{{ var_username }}"
     group: "{{ var_username }}"
-    mode: '0700'
+    mode: "0700"
 
 - name: "Install public key"
   no_log: true
   ansible.builtin.copy:
-    dest: "{{ var_home_dir }}/.ssh/id_rsa.pub"
+    dest: "{{ var_home_dir }}/.ssh/id_{{ users_management_ssh_key_type }}.pub"
     content: "{{ var_public_ssh_key }}"
     owner: "{{ var_username }}"
     group: "{{ var_username }}"
-    mode: '0644'
+    mode: "0644"
   when:
     - var_public_ssh_key is defined
-    - var_public_ssh_key != ""
+    - var_public_ssh_key | length > 0
 
 - name: "Install private key"
   no_log: true
   ansible.builtin.copy:
-    dest: "{{ var_home_dir }}/.ssh/id_rsa"
+    dest: "{{ var_home_dir }}/.ssh/id_{{ users_management_ssh_key_type }}"
     content: "{{ var_private_ssh_key }}"
     owner: "{{ var_username }}"
     group: "{{ var_username }}"
-    mode: '0600'
+    mode: "0600"
   when:
     - var_private_ssh_key is defined
-    - var_private_ssh_key != ""
+    - var_private_ssh_key | length > 0
 
 - name: "Configure authorized_keys"
   no_log: true
@@ -40,4 +40,6 @@
     path: "{{ var_home_dir }}/.ssh/authorized_keys"
     manage_dir: false
   loop: "{{ var_authorized_keys }}"
+  loop_control:
+    label: "{{ item.state | default('present') }}"
   when: var_authorized_keys | length > 0
