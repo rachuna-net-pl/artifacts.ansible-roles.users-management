@@ -1,31 +1,39 @@
-# <img src="docs/linux.png" alt="linux" height="20"/> users-management
+# <img src="docs/linux.png" alt="linux" height="30"/> users-management
 
 Rola do tworzenia kont użytkowników (zwykłych i technicznych) oraz ich kluczy SSH. 
 
 ## Wymagania
-- Ansible >= 2.9 z `become` na hostach.
+- Ansible >= 2.10 z `become` na hostach.
+- Kolekcja `ansible.posix` (do zarządzania `authorized_keys`):
+  ```bash
+  ansible-galaxy collection install ansible.posix
+  ```
 - Obsługiwane rodziny: Debian/Ubuntu, EL 7/8/9, Alpine.
 
 ## Zmienne
-- `in_user_accounts`: lista użytkowników do utworzenia.
-- `in_technical_accounts`: lista kont technicznych do utworzenia.
-- `in_groups`: grupy do utworzenia przed zakładaniem użytkowników (lista nazw lub obiektów z `name`, opcjonalnie `gid`, `system`).
 
-Struktura konta:
+| Zmienna | Domyślna | Opis |
+|---|---|---|
+| `in_user_accounts` | `[]` | Lista kont użytkowników do utworzenia |
+| `in_technical_accounts` | `[]` | Lista kont technicznych do utworzenia |
+| `in_groups` | `[]` | Grupy do utworzenia (lista nazw lub obiektów z `name`, `gid`, `system`) |
+| `users_management_ssh_key_type` | `ed25519` | Typ klucza SSH: `rsa`, `ed25519` lub `ecdsa` |
+
+### Struktura konta
 ```yaml
-- username: user1
-  comment: "Opis"
-  shell: /bin/bash           # opcjonalnie
+- username: user1           # wymagane
+  comment: "Opis"           # opcjonalnie
+  shell: /bin/bash           # opcjonalnie (domyślnie /bin/bash)
   uid: 1000                  # opcjonalnie
-  gid: 1000                  # opcjonalnie
-  home_path: /home/user1     # opcjonalnie
+  gid: 1000                  # opcjonalnie (tworzy grupę o nazwie username)
+  home_path: /home/user1     # opcjonalnie (domyślnie /home/{username})
   system_groups:             # opcjonalnie
     - sudo
-  public_ssh_key: "ssh-... user@host"          # opcjonalnie
-  private_ssh_key: "-----BEGIN OPENSSH PRIVATE KEY-----..."  # opcjonalnie
-  authorized_keys:
+  public_ssh_key: "ssh-ed25519 AAAA... user@host"               # opcjonalnie
+  private_ssh_key: "-----BEGIN OPENSSH PRIVATE KEY-----..."      # opcjonalnie
+  authorized_keys:                                                # opcjonalnie
     - authorized_key: "ssh-ed25519 AAAA..."
-      state: present
+      state: present         # present/absent (domyślnie present)
 ```
 
 ## Przykład użycia
@@ -35,6 +43,7 @@ Struktura konta:
   roles:
     - role: users-management
       vars:
+        users_management_ssh_key_type: ed25519
         in_groups:
           - name: administratorzy
             gid: 4000
@@ -51,6 +60,23 @@ Struktura konta:
             public_ssh_key: "ssh-ed25519 BBBB... ci@server"
 ```
 
+## Testowanie (Molecule)
+
+Rola zawiera scenariusze Molecule do testów na Ubuntu 22.04 i Rocky Linux 9.
+
+```bash
+pip install molecule molecule-docker
+ansible-galaxy collection install -r molecule/requirements.yml
+molecule test
+```
+
+## Walidacja
+
+Rola automatycznie waliduje dane wejściowe:
+- Typy zmiennych (`in_groups`, `in_user_accounts`, `in_technical_accounts` muszą być listami)
+- Każde konto musi mieć pole `username`
+- `users_management_ssh_key_type` musi być jednym z: `rsa`, `ed25519`, `ecdsa`
+
 ---
 ## Contributions
 Jeśli masz pomysły na ulepszenia, zgłoś problemy, rozwidl repozytorium lub utwórz Merge Request. Wszystkie wkłady są mile widziane!
@@ -58,9 +84,9 @@ Jeśli masz pomysły na ulepszenia, zgłoś problemy, rozwidl repozytorium lub u
 
 ---
 ## License
-Projekt licencjonowany jest na warunkach [Licencji MIT](LICENSE).
+[Licencja](LICENSE) oparta na zasadach Creative Commons BY-NC-SA 4.0, dostosowana do potrzeb projektu.
 
 ---
 # Author Information
-### &emsp; Maciej Rachuna
-# <img src="docs/linux.png" alt="rachuna-net.pl" height="100"/>
+### Maciej Rachuna
+# <img src="docs/logo.png" alt="rachuna-net.pl" height="100"/>

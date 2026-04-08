@@ -1,0 +1,27 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    in_groups:
+      - name: developers
+        gid: 4000
+      - ops
+    in_user_accounts:
+      - username: testuser
+        comment: "Test User"
+        uid: 2001
+        gid: 4000
+        system_groups:
+          - ops
+        authorized_keys:
+          - authorized_key: >-
+              ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAITestKeyForMolecule000000000000000000000
+              test@molecule
+            state: present
+    in_technical_accounts:
+      - username: deploy
+        comment: "Deploy service account"
+        uid: 2002
+  roles:
+    - role: users_management

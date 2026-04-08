@@ -18,8 +18,11 @@
         shell: "{{ var_account.shell | default(var_default_shell) }}"
         group: "{{ var_account.username if var_account.gid is defined else omit }}"
         groups: "{{ var_account.system_groups | default(omit) }}"
+        append: true
         uid: "{{ var_account.uid | default(omit) }}"
         home: "{{ users_management_home_dir }}"
+        create_home: true
+        state: present
 
     - name: "Copy SSH keys"
       ansible.builtin.include_tasks: copy_ssh_keys.yml
