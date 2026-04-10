@@ -1,13 +1,31 @@
 # <img src="docs/linux.png" alt="linux" height="30"/> users-management
 
-Rola do tworzenia kont użytkowników (zwykłych i technicznych) oraz ich kluczy SSH. 
+Rola do tworzenia kont użytkowników (zwykłych i technicznych) oraz ich kluczy SSH.
+
+## Architektura przepływu
+
+```mermaid
+flowchart TD
+    Start([Start roli]) --> Groups[Utworzenie grup systemowych<br/>ansible.builtin.group]
+    Groups --> TechLoop[/Loop: in_technical_accounts/]
+    TechLoop --> CreateTech[create_account.yml]
+    CreateTech --> UserLoop[/Loop: in_user_accounts/]
+    UserLoop --> CreateUser[create_account.yml]
+    CreateUser --> End([Koniec])
+
+    subgraph CA [create_account.yml]
+        direction TB
+        CA1[Utworzenie grupy użytkownika] --> CA2[Utworzenie konta<br/>ansible.builtin.user]
+        CA2 --> CA3[Konfiguracja kluczy SSH<br/>.ssh/, pub, priv, authorized_keys]
+    end
+
+    CreateTech -.-> CA
+    CreateUser -.-> CA
+```
 
 ## Wymagania
 - Ansible >= 2.10 z `become` na hostach.
 - Kolekcja `ansible.posix` (do zarządzania `authorized_keys`):
-  ```bash
-  ansible-galaxy collection install ansible.posix
-  ```
 - Obsługiwane rodziny: Debian/Ubuntu, EL 7/8/9, Alpine.
 
 ## Zmienne
